@@ -54,6 +54,7 @@ void Game::Init()
 
 void Game::Update(float dt)
 {
+    MonsterMove(dt * 150.0f);
 }
 void Game::reAdjust(int i, GameObject& a, GameObject b, float velocity) {
     if (i == 1 && this->CheckCollision(a, b)) {
@@ -120,6 +121,8 @@ void Game::MonsterMove(float velocity) {
         for (int i = 1; i < 4; i++) {
             if (p[a - 1] < p[i]) a = i + 1;
         }
+        // Normal way
+        a = currpos[my][mx];
         s.Position += movement[a - 1] * velocity;
         for (auto& box : level.Boxes) {
             reAdjust(a, s, box, velocity);
