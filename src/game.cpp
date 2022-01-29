@@ -73,6 +73,12 @@ void Game::reAdjust(int i, GameObject& a, GameObject b, float velocity) {
         a.Position -= glm::vec2(a.Position.x - b.Size.x - b.Position.x, 0.0f);
     }
 }
+float areaIntersection(GameObject& a, float x, float y) {
+    cout << a.Position.x << " " << a.Size.x << " " << x << " " << unit_width << "\n";
+    float xoverlap = max(0.0f, min(a.Position.x + a.Size.x, x + unit_width) - max(a.Position.x, x));
+    float yoverlap = max(0.0f, min(a.Position.y + a.Size.y, y + unit_height) - max(a.Position.y, y));
+    return xoverlap * yoverlap;
+}
 void Game::MonsterMove(float velocity) {
     auto& level = this->Levels[this->Level];
     vector<vector<int>> currpos(gridHeight, vector<int>(gridWidth, 0));
@@ -95,20 +101,26 @@ void Game::MonsterMove(float velocity) {
             }
         }
     }
-    cout << "---------\n";
-    for (auto& s : currpos) {
-        for (auto& x : s) {
-            cout << x << " ";
-        }
-        cout << "\n";
-    }
-    cout << "---------\n";
     glm::vec2 movement[4] = {glm::vec2(0.0f, -1.0f), glm::vec2(1.0f, 0.0f),glm::vec2(0.0f, 1.0f), glm::vec2(-1.0f,0.0f)};
     for (auto& s : level.Monsters) {
         int mx = s.Position.x / unit_width;
         int my = s.Position.y / unit_height;
-        int a = currpos[my][mx];
-        s.Position += movement[currpos[my][mx] - 1] * velocity;
+        float ax = (float)mx * unit_width, ay = (float)my * unit_height;
+        float arr1[4] = {ax, ax, ax + unit_width, ax + unit_width};
+        float arr2[4] = {ay, ay + unit_height, ay, ay + unit_height};
+        float p[4] = {0, 0, 0, 0};
+        for (int j = 0; j < 4; j++) {
+            int q = arr1[j] / unit_width;
+            int r = arr2[j] / unit_height;
+            if (q >= gridWidth || r >= gridHeight) continue;
+            int a = currpos[r][q] - 1;
+            p[a] += areaIntersection(s, arr1[j], arr2[j]);
+        }
+        int a = 1;
+        for (int i = 1; i < 4; i++) {
+            if (p[a - 1] < p[i]) a = i + 1;
+        }
+        s.Position += movement[a - 1] * velocity;
         for (auto& box : level.Boxes) {
             reAdjust(a, s, box, velocity);
         }
