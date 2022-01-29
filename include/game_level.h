@@ -15,6 +15,8 @@ class GameLevel
     // level state
 //    std::vector<std::vector<int>> grid;
     std::vector<GameObject> Boxes;
+    std::vector<GameObject> Coins;
+    std::vector<GameObject> Monsters;
     // constructor
     GameLevel() { }
     // loads level from file

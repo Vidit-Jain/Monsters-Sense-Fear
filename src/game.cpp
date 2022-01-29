@@ -6,8 +6,8 @@
 #include "game_level.h"
 SpriteRenderer  *Renderer;
 using namespace std;
-glm::vec2 position(200.0f, 200.0f);
-Game::Game(unsigned int width, unsigned int height) 
+GameObject *Player;
+Game::Game(unsigned int width, unsigned int height)
     : State(GAME_ACTIVE), Keys(), Width(width), Height(height)
 {
 }
@@ -30,9 +30,17 @@ void Game::Init()
     Renderer = new SpriteRenderer(ResourceManager::GetShader("sprite"));
     // load textures
     ResourceManager::LoadTexture("../textures/crate.jpg", false, "box");
-    ResourceManager::LoadTexture("../textures/desert.png", false, "background");
+    ResourceManager::LoadTexture("../textures/alien.png", true, "alien");
+    ResourceManager::LoadTexture("../textures/coin.png", true, "coin");
+    ResourceManager::LoadTexture("../textures/cowboy.png", true, "cowboy");
+    ResourceManager::LoadTexture("../textures/background.png", false, "background");
     GameLevel s;
-    s.Load(this->Height, this->Width, 20, 20, 25, 5, 5, 0);
+    int gridHeight = 20, gridWidth = 20, blocks = 25, coins = 5, monsters = 5, monsterDistance = 6;
+    float unit_width = this->Width / (float)gridWidth, unit_height = this->Height / (float)gridHeight;
+    auto player_size = glm::vec2(unit_width, unit_height);
+    Player = new GameObject(player_size, player_size, ResourceManager::GetTexture("cowboy"));
+
+    s.Load(this->Height, this->Width, gridHeight, gridWidth, blocks, coins, monsters, monsterDistance);
     this->Levels.push_back(s);
     this->Level = 0;
 }
@@ -46,18 +54,18 @@ void Game::ProcessInput(float dt)
     if (this->State == GAME_ACTIVE)
     {
 //        float velocity = 4.5f * dt;
-        if (this->Keys[GLFW_KEY_A]) {
-            position -= glm::vec2(1.0f, 0.0f) * 8.0f;
-        }
-        if (this->Keys[GLFW_KEY_D]) {
-            position += glm::vec2(1.0f, 0.0f) * 8.0f;
-        }
-        if (this->Keys[GLFW_KEY_W]) {
-            position -= glm::vec2(0.0f, 1.0f) * 8.0f;
-        }
-        if (this->Keys[GLFW_KEY_S]) {
-            position += glm::vec2(0.0f, 1.0f) * 8.0f;
-        }
+//        if (this->Keys[GLFW_KEY_A]) {
+//            position -= glm::vec2(1.0f, 0.0f) * 8.0f;
+//        }
+//        if (this->Keys[GLFW_KEY_D]) {
+//            position += glm::vec2(1.0f, 0.0f) * 8.0f;
+//        }
+//        if (this->Keys[GLFW_KEY_W]) {
+//            position -= glm::vec2(0.0f, 1.0f) * 8.0f;
+//        }
+//        if (this->Keys[GLFW_KEY_S]) {
+//            position += glm::vec2(0.0f, 1.0f) * 8.0f;
+//        }
 //        float velocity = PLAYER_VELOCITY * dt;
 //        // move playerboard
 //        if (this->Keys[GLFW_KEY_A])
@@ -88,4 +96,5 @@ void Game::Render()
     Renderer->DrawSprite(ResourceManager::GetTexture("background"),
                          glm::vec2(0.0f, 0.0f), glm::vec2(this->Width, this->Height), 0.0f, glm::vec3(1.0f, 1.0f, 1.0f));
     this->Levels[this->Level].Draw(*Renderer);
+    Player->Draw(*Renderer);
 }

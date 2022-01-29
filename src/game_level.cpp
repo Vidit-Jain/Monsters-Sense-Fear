@@ -48,7 +48,11 @@ void generateSprites(vector<vector<int>>& grid, unsigned int spriteCount, int sp
 vector<vector<int>> generateGrid(unsigned int height, unsigned int width, unsigned int blocks, unsigned int coins,
                                  unsigned int monsters, unsigned int monsterDistance)
 {
+    srand(time(0));
     int count = 0;
+    height -= 2;
+    width -= 2;
+    vector<vector<int>> smallgrid;
     while (1) {
         vector<vector<int>> grid(height, vector<int>(width, 0));
         for (int i = 0; i < blocks; i++) {
@@ -61,11 +65,25 @@ vector<vector<int>> generateGrid(unsigned int height, unsigned int width, unsign
             grid[h][w] = 4;
         }
         if (validgrid(grid, blocks)) {
+            cout << count << "\n";
             generateSprites(grid, coins, 2);
             generateSprites(grid, monsters, 3, monsterDistance);
-            return grid;
+            smallgrid = grid;
+            break;
+        }
+        count++;
+    }
+    height += 2;
+    width += 2;
+    vector<vector<int>> grid(height, vector<int>(width, 0));
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            if (i == 0 || j == 0) grid[i][j] = 4;
+            else if (i == height - 1 || j == width - 1) grid[i][j] = 4;
+            else grid[i][j] = smallgrid[i - 1][j - 1];
         }
     }
+    return grid;
 }
 
 void GameLevel::Load(unsigned int levelHeight, unsigned int levelWidth, unsigned int gridHeight, unsigned int gridWidth,
@@ -82,9 +100,13 @@ void GameLevel::Load(unsigned int levelHeight, unsigned int levelWidth, unsigned
 
 void GameLevel::Draw(SpriteRenderer &renderer)
 {
-    for (GameObject &tile : this->Boxes)
-        if (!tile.Destroyed)
-            tile.Draw(renderer);
+    for (GameObject &box: this->Boxes)
+            box.Draw(renderer);
+    for (GameObject &monster : this->Monsters)
+            monster.Draw(renderer);
+    for (GameObject &coins : this->Coins)
+        if (!coins.Destroyed)
+            coins.Draw(renderer);
 }
 
 bool GameLevel::IsCompleted()
@@ -102,6 +124,11 @@ void GameLevel::init(std::vector<std::vector<int>> grid, unsigned int levelWidth
     unsigned int width = grid[0].size(); // note we can index vector at [0] since this function is only called if height > 0
     float unit_width = levelWidth / static_cast<float>(width), unit_height = levelHeight / height;
     // initialize level tiles based on tileData
+//    glm::vec2 pos(unit_width, unit_height);
+//    glm::vec2 size(unit_width, unit_height);
+//    GameObject obj(pos, size, ResourceManager::GetTexture("cowboy"), glm::vec3(1.0f,1.0f,1.0f));
+//    obj.IsSolid = true;
+//    this->Boxes.push_back(obj);
     for (unsigned int y = 0; y < height; ++y)
     {
         for (unsigned int x = 0; x < width; ++x)
@@ -114,6 +141,22 @@ void GameLevel::init(std::vector<std::vector<int>> grid, unsigned int levelWidth
                 GameObject obj(pos, size, ResourceManager::GetTexture("box"), glm::vec3(1.0f,1.0f,1.0f));
                 obj.IsSolid = true;
                 this->Boxes.push_back(obj);
+            }
+            if (grid[y][x] == 3) // solid
+            {
+                glm::vec2 pos(unit_width * x, unit_height * y);
+                glm::vec2 size(unit_width, unit_height);
+                GameObject obj(pos, size, ResourceManager::GetTexture("alien"), glm::vec3(1.0f,1.0f,1.0f));
+                obj.IsSolid = true;
+                this->Monsters.push_back(obj);
+            }
+            if (grid[y][x] == 2) // solid
+            {
+                glm::vec2 pos(unit_width * x, unit_height * y);
+                glm::vec2 size(unit_width, unit_height);
+                GameObject obj(pos, size, ResourceManager::GetTexture("coin"), glm::vec3(1.0f,1.0f,1.0f));
+                obj.IsSolid = false;
+                this->Coins.push_back(obj);
             }
 //            else if (tileData[y][x] > 1)	// non-solid; now determine its color based on level data
 //            {
