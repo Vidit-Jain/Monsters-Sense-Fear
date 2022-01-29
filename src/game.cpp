@@ -7,16 +7,20 @@
 SpriteRenderer  *Renderer;
 using namespace std;
 GameObject *Player;
+const int gridHeight = 20;
+const int gridWidth = 20;
+float unit_width, unit_height;
 Game::Game(unsigned int width, unsigned int height)
     : State(GAME_ACTIVE), Keys(), Width(width), Height(height)
 {
+    unit_width = width / (float) gridWidth;
+    unit_height = width / (float) gridHeight;
 }
 
 Game::~Game()
 {
     
 }
-
 void Game::Init()
 {
 
@@ -35,10 +39,10 @@ void Game::Init()
     ResourceManager::LoadTexture("../textures/cowboy.png", true, "cowboy");
     ResourceManager::LoadTexture("../textures/background.png", false, "background");
     GameLevel s;
-    int gridHeight = 20, gridWidth = 20, blocks = 25, coins = 5, monsters = 5, monsterDistance = 6;
-    float unit_width = this->Width / (float)gridWidth, unit_height = this->Height / (float)gridHeight;
-    auto player_size = glm::vec2(unit_width, unit_height);
-    Player = new GameObject(player_size, player_size, ResourceManager::GetTexture("cowboy"));
+    int blocks = 25, coins = 5, monsters = 5, monsterDistance = 6;
+    auto player_pos = glm::vec2(unit_width, unit_height);
+    auto player_size = glm::vec2(unit_width * 0.85f, unit_height * 0.85f);
+    Player = new GameObject(player_pos, player_size, ResourceManager::GetTexture("cowboy"));
 
     s.Load(this->Height, this->Width, gridHeight, gridWidth, blocks, coins, monsters, monsterDistance);
     this->Levels.push_back(s);
@@ -53,19 +57,19 @@ void Game::ProcessInput(float dt)
 {
     if (this->State == GAME_ACTIVE)
     {
-//        float velocity = 4.5f * dt;
-//        if (this->Keys[GLFW_KEY_A]) {
-//            position -= glm::vec2(1.0f, 0.0f) * 8.0f;
-//        }
-//        if (this->Keys[GLFW_KEY_D]) {
-//            position += glm::vec2(1.0f, 0.0f) * 8.0f;
-//        }
-//        if (this->Keys[GLFW_KEY_W]) {
-//            position -= glm::vec2(0.0f, 1.0f) * 8.0f;
-//        }
-//        if (this->Keys[GLFW_KEY_S]) {
-//            position += glm::vec2(0.0f, 1.0f) * 8.0f;
-//        }
+        float velocity = 150.0f * dt;
+        if (this->Keys[GLFW_KEY_A]) {
+            Player->Position -= glm::vec2(1.0f, 0.0f) * velocity;
+        }
+        if (this->Keys[GLFW_KEY_D]) {
+            Player->Position += glm::vec2(1.0f, 0.0f) * velocity;
+        }
+        if (this->Keys[GLFW_KEY_W]) {
+            Player->Position -= glm::vec2(0.0f, 1.0f) * velocity;
+        }
+        if (this->Keys[GLFW_KEY_S]) {
+            Player->Position += glm::vec2(0.0f, 1.0f) * velocity;
+        }
 //        float velocity = PLAYER_VELOCITY * dt;
 //        // move playerboard
 //        if (this->Keys[GLFW_KEY_A])
