@@ -55,8 +55,23 @@ void Game::Init()
 void Game::Update(float dt)
 {
 }
-void reAdjust(int i, GameObject& a, GameObject b, float velocity) {
-//    if (i == 1)
+void Game::reAdjust(int i, GameObject& a, GameObject b, float velocity) {
+    if (i == 1 && this->CheckCollision(a, b)) {
+        a.Position += glm::vec2(0.0f, 1.0f) * velocity;
+        a.Position -= glm::vec2(0.0f, a.Position.y - b.Size.y - b.Position.y);
+    }
+    if (i == 2 && this->CheckCollision(a, b)) {
+        a.Position -= glm::vec2(1.0f, 0.0f) * velocity;
+        a.Position += glm::vec2(b.Position.x - a.Position.x - a.Size.x, 0.0f);
+    }
+    if (i == 3 && this->CheckCollision(a, b)) {
+        a.Position -= glm::vec2(0.0f, 1.0f) * velocity;
+        a.Position += glm::vec2(0.0f, b.Position.y - a.Position.y - a.Size.y);
+    }
+    if (i == 4 && this->CheckCollision(*Player, b)) {
+        a.Position += glm::vec2(1.0f, 0.0f) * velocity;
+        a.Position -= glm::vec2(a.Position.x - b.Size.x - b.Position.x, 0.0f);
+    }
 }
 void Game::MonsterMove(float dt) {
     auto& level = this->Levels[this->Level];
@@ -93,46 +108,50 @@ void Game::ProcessInput(float dt)
     if (this->State == GAME_ACTIVE)
     {
         float velocity = 150.0f * dt;
-        if (this->Keys[GLFW_KEY_A]) {
+        if (this->Keys[GLFW_KEY_W]) {
             MonsterMove(dt);
-            Player->Position -= glm::vec2(1.0f, 0.0f) * velocity;
+            Player->Position -= glm::vec2(0.0f, 1.0f) * velocity;
             for (auto& box : this->Levels[this->Level].Boxes) {
                 if (box.Destroyed) continue;
-                if (this->CheckCollision(*Player, box)) {
-                    Player->Position += glm::vec2(1.0f, 0.0f) * velocity;
-                    Player->Position -= glm::vec2(Player->Position.x - box.Size.x - box.Position.x, 0.0f);
-                }
+                reAdjust(1, *Player, box, velocity);
+//                if (this->CheckCollision(*Player, box)) {
+//                    Player->Position += glm::vec2(0.0f, 1.0f) * velocity;
+//                    Player->Position -= glm::vec2(0.0f, Player->Position.y - box.Size.y - box.Position.y);
+//                }
             }
         }
         if (this->Keys[GLFW_KEY_D]) {
             Player->Position += glm::vec2(1.0f, 0.0f) * velocity;
             for (auto& box : this->Levels[this->Level].Boxes) {
                 if (box.Destroyed) continue;
-                if (this->CheckCollision(*Player, box)) {
-                    Player->Position -= glm::vec2(1.0f, 0.0f) * velocity;
-                    Player->Position += glm::vec2(box.Position.x - Player->Position.x - Player->Size.x, 0.0f);
-                }
-            }
-        }
-        if (this->Keys[GLFW_KEY_W]) {
-            MonsterMove(dt);
-            Player->Position -= glm::vec2(0.0f, 1.0f) * velocity;
-            for (auto& box : this->Levels[this->Level].Boxes) {
-                if (box.Destroyed) continue;
-                if (this->CheckCollision(*Player, box)) {
-                    Player->Position += glm::vec2(0.0f, 1.0f) * velocity;
-                    Player->Position -= glm::vec2(0.0f, Player->Position.y - box.Size.y - box.Position.y);
-                }
+                reAdjust(2, *Player, box, velocity);
+//                if (this->CheckCollision(*Player, box)) {
+//                    Player->Position -= glm::vec2(1.0f, 0.0f) * velocity;
+//                    Player->Position += glm::vec2(box.Position.x - Player->Position.x - Player->Size.x, 0.0f);
+//                }
             }
         }
         if (this->Keys[GLFW_KEY_S]) {
             Player->Position += glm::vec2(0.0f, 1.0f) * velocity;
             for (auto& box : this->Levels[this->Level].Boxes) {
                 if (box.Destroyed) continue;
-                if (this->CheckCollision(*Player, box)) {
-                    Player->Position -= glm::vec2(0.0f, 1.0f) * velocity;
-                    Player->Position += glm::vec2(0.0f, box.Position.y - Player->Position.y - Player->Size.y);
-                }
+                reAdjust(3, *Player, box, velocity);
+//                if (this->CheckCollision(*Player, box)) {
+//                    Player->Position -= glm::vec2(0.0f, 1.0f) * velocity;
+//                    Player->Position += glm::vec2(0.0f, box.Position.y - Player->Position.y - Player->Size.y);
+//                }
+            }
+        }
+        if (this->Keys[GLFW_KEY_A]) {
+            MonsterMove(dt);
+            Player->Position -= glm::vec2(1.0f, 0.0f) * velocity;
+            for (auto& box : this->Levels[this->Level].Boxes) {
+                if (box.Destroyed) continue;
+                reAdjust(4, *Player, box, velocity);
+//                if (this->CheckCollision(*Player, box)) {
+//                    Player->Position += glm::vec2(1.0f, 0.0f) * velocity;
+//                    Player->Position -= glm::vec2(Player->Position.x - box.Size.x - box.Position.x, 0.0f);
+//                }
             }
         }
     }
@@ -171,13 +190,9 @@ void Game::DoCollision() {
             coin.Destroyed = true;
             points++;
             if (points == this->Levels[this->Level].Coins.size()) {
-                cout << "HI\n";
                 auto& x = this->Levels[this->Level];
                 x.Boxes[x.exitIndex].Destroyed = true;
-                cout << x.exitIndex << " jj\n";
-//                this->Levels[this->Level].Boxes[this->Levels[this->Level].exitIndex].Destroyed = true;
             }
-            cout << points << endl;
         }
     }
 }
