@@ -17,6 +17,7 @@ class GameLevel
     std::vector<GameObject> Boxes;
     std::vector<GameObject> Coins;
     std::vector<GameObject> Monsters;
+    int exitIndex;
     // constructor
     GameLevel() { }
     // loads level from file

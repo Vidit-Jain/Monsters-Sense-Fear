@@ -101,6 +101,7 @@ void GameLevel::Load(unsigned int levelHeight, unsigned int levelWidth, unsigned
 void GameLevel::Draw(SpriteRenderer &renderer)
 {
     for (GameObject &box: this->Boxes)
+        if (!box.Destroyed)
             box.Draw(renderer);
     for (GameObject &monster : this->Monsters)
             monster.Draw(renderer);
@@ -140,6 +141,7 @@ void GameLevel::init(std::vector<std::vector<int>> grid, unsigned int levelWidth
                 glm::vec2 size(unit_width, unit_height);
                 GameObject obj(pos, size, ResourceManager::GetTexture("box"), glm::vec3(1.0f,1.0f,1.0f));
                 obj.IsSolid = true;
+                if (y == height - 2 && x == width - 1) this->exitIndex = this->Boxes.size();
                 this->Boxes.push_back(obj);
             }
             if (grid[y][x] == 3) // solid
