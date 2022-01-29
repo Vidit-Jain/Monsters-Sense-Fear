@@ -17,6 +17,7 @@ class GameLevel
     std::vector<GameObject> Boxes;
     std::vector<GameObject> Coins;
     std::vector<GameObject> Monsters;
+    std::vector<std::vector<int>> grid;
     int exitIndex;
     // constructor
     GameLevel() { }
@@ -29,7 +30,7 @@ class GameLevel
     bool IsCompleted();
     private:
     // initialize level from tile data
-    void init(std::vector<std::vector<int>> tileData, unsigned int levelHeight, unsigned int levelWidth);
+    void init(unsigned int levelHeight, unsigned int levelWidth);
 };
 
 #endif

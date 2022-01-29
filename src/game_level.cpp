@@ -93,9 +93,9 @@ void GameLevel::Load(unsigned int levelHeight, unsigned int levelWidth, unsigned
     this->Boxes.clear();
     // load from file
     unsigned int tileCode;
-    vector<vector<int>> grid = generateGrid(gridHeight, gridWidth, blocks, coins, monsters, monsterDistance);
+    this->grid = generateGrid(gridHeight, gridWidth, blocks, coins, monsters, monsterDistance);
 //    if (tileData.size() > 0)
-    this->init(grid, levelHeight, levelWidth);
+    this->init(levelHeight, levelWidth);
 }
 
 void GameLevel::Draw(SpriteRenderer &renderer)
@@ -118,7 +118,7 @@ bool GameLevel::IsCompleted()
     return true;
 }
 
-void GameLevel::init(std::vector<std::vector<int>> grid, unsigned int levelWidth, unsigned int levelHeight)
+void GameLevel::init(unsigned int levelWidth, unsigned int levelHeight)
 {
     // calculate dimensions
     unsigned int height = grid.size();

@@ -28,6 +28,8 @@ public:
     void Render();
     bool CheckCollision(GameObject &one, GameObject &two);
     void DoCollision();
+    void MonsterMove(float velocity);
+    void reAdjust(int i, GameObject& a, GameObject b, float velocity);
 };
 
 #endif
