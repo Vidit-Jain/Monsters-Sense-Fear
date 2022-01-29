@@ -68,12 +68,12 @@ void Game::reAdjust(int i, GameObject& a, GameObject b, float velocity) {
         a.Position -= glm::vec2(0.0f, 1.0f) * velocity;
         a.Position += glm::vec2(0.0f, b.Position.y - a.Position.y - a.Size.y);
     }
-    if (i == 4 && this->CheckCollision(*Player, b)) {
+    if (i == 4 && this->CheckCollision(a, b)) {
         a.Position += glm::vec2(1.0f, 0.0f) * velocity;
         a.Position -= glm::vec2(a.Position.x - b.Size.x - b.Position.x, 0.0f);
     }
 }
-void Game::MonsterMove(float dt) {
+void Game::MonsterMove(float velocity) {
     auto& level = this->Levels[this->Level];
     vector<vector<int>> currpos(gridHeight, vector<int>(gridWidth, 0));
     int px = Player->Position.x / unit_width;
@@ -95,12 +95,23 @@ void Game::MonsterMove(float dt) {
             }
         }
     }
+    cout << "---------\n";
+    for (auto& s : currpos) {
+        for (auto& x : s) {
+            cout << x << " ";
+        }
+        cout << "\n";
+    }
+    cout << "---------\n";
     glm::vec2 movement[4] = {glm::vec2(0.0f, -1.0f), glm::vec2(1.0f, 0.0f),glm::vec2(0.0f, 1.0f), glm::vec2(-1.0f,0.0f)};
     for (auto& s : level.Monsters) {
         int mx = s.Position.x / unit_width;
         int my = s.Position.y / unit_height;
-        int a = currpos[my][mx] - 1;
-        s.Position += movement[currpos[my][mx] - 1] * 150.0f * dt;
+        int a = currpos[my][mx];
+        s.Position += movement[currpos[my][mx] - 1] * velocity;
+        for (auto& box : level.Boxes) {
+            reAdjust(a, s, box, velocity);
+        }
     }
 }
 void Game::ProcessInput(float dt)
@@ -109,7 +120,7 @@ void Game::ProcessInput(float dt)
     {
         float velocity = 150.0f * dt;
         if (this->Keys[GLFW_KEY_W]) {
-            MonsterMove(dt);
+            MonsterMove(velocity);
             Player->Position -= glm::vec2(0.0f, 1.0f) * velocity;
             for (auto& box : this->Levels[this->Level].Boxes) {
                 if (box.Destroyed) continue;
@@ -143,7 +154,7 @@ void Game::ProcessInput(float dt)
             }
         }
         if (this->Keys[GLFW_KEY_A]) {
-            MonsterMove(dt);
+            MonsterMove(velocity);
             Player->Position -= glm::vec2(1.0f, 0.0f) * velocity;
             for (auto& box : this->Levels[this->Level].Boxes) {
                 if (box.Destroyed) continue;
