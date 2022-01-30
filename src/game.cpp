@@ -13,12 +13,15 @@ const int gridHeight = 20;
 const int gridWidth = 20;
 float unit_width, unit_height;
 int points = 0, prevpoints = 0;
+int bonus = 0;
 int dy[4] = {1, 0, -1, 0};
 int dx[4] = {0, -1, 0, 1};
 glm::vec2 initial_player_pos;
 Game::Game(unsigned int width, unsigned int height)
     : State(GAME_MENU), Keys(), Width(width), Height(height)
 {
+    LightsOn = true;
+    CheatsOn = false;
     unit_width = width / (float) gridWidth;
     unit_height = width / (float) gridHeight;
 }
@@ -105,6 +108,7 @@ float areaIntersection(GameObject& a, float x, float y) {
     return xoverlap * yoverlap;
 }
 void Game::MonsterMove(float velocity) {
+    if (CheatsOn) return;
     auto& level = this->Levels[this->Level];
     vector<vector<int>> currpos(gridHeight, vector<int>(gridWidth, 0));
     int px = Player->Position.x / unit_width;
@@ -193,13 +197,14 @@ void Game::ProcessInput(float dt)
 
 void Game::Render()
 {
+    glm::vec2 center = Player->Position + glm::vec2(Player->Size.x / 2, Player->Size.y / 2);
     Renderer->DrawSprite(ResourceManager::GetTexture("background"),
-                         glm::vec2(0.0f, 0.0f), glm::vec2(this->Width, this->Height), 0.0f, glm::vec3(1.0f, 1.0f, 1.0f));
+                         glm::vec2(0.0f, 0.0f), glm::vec2(this->Width, this->Height), 0.0f, glm::vec3(1.0f, 1.0f, 1.0f), LightsOn,center);
     if (State == GAME_ACTIVE) {
         this->DoCollision();
-        this->Levels[this->Level].Draw(*Renderer);
-        Player->Draw(*Renderer);
-        std::string str = "Points " + std::to_string(points);
+        this->Levels[this->Level].Draw(*Renderer, this->LightsOn, center);
+        Player->Draw(*Renderer, 1, center);
+        std::string str = "Points " + std::to_string(points + bonus);
         Text->RenderText(str, 180.0f, 40.0f, 1.0f);
     }
     else if (State == GAME_MENU) {
@@ -235,7 +240,8 @@ void Game::DoCollision() {
         if (coin.Destroyed) continue;
         if (this->CheckCollision(*Player, coin)) {
             coin.Destroyed = true;
-            points++;
+            points += 1;
+            bonus += !LightsOn;
             if (points == this->Levels[this->Level].Coins.size() + prevpoints) {
                 auto& x = this->Levels[this->Level];
                 x.Boxes[x.exitIndex].Destroyed = true;

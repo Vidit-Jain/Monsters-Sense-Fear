@@ -94,20 +94,19 @@ void GameLevel::Load(unsigned int levelHeight, unsigned int levelWidth, unsigned
     // load from file
     unsigned int tileCode;
     this->grid = generateGrid(gridHeight, gridWidth, blocks, coins, monsters, monsterDistance);
-//    if (tileData.size() > 0)
     this->init(levelHeight, levelWidth);
 }
 
-void GameLevel::Draw(SpriteRenderer &renderer)
+void GameLevel::Draw(SpriteRenderer &renderer, int LightsOn, glm::vec2 PlayerPos)
 {
     for (GameObject &box: this->Boxes)
         if (!box.Destroyed)
-            box.Draw(renderer);
+            box.Draw(renderer, LightsOn, PlayerPos);
     for (GameObject &monster : this->Monsters)
-            monster.Draw(renderer);
+            monster.Draw(renderer, LightsOn, PlayerPos);
     for (GameObject &coins : this->Coins)
         if (!coins.Destroyed)
-            coins.Draw(renderer);
+            coins.Draw(renderer, LightsOn, PlayerPos);
 }
 
 bool GameLevel::IsCompleted()

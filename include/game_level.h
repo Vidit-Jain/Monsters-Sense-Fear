@@ -25,7 +25,7 @@ class GameLevel
     void Load(unsigned int levelHeight, unsigned int levelWidth, unsigned int gridHeight, unsigned int gridWidth,
                          unsigned int blocks, unsigned int coins, unsigned int monsters, unsigned int monsterDistance);
     // render level
-    void Draw(SpriteRenderer &renderer);
+    void Draw(SpriteRenderer &renderer, int LightsOn, glm::vec2 PlayerPos);
     // check if the level is completed (all non-solid tiles are destroyed)
     bool IsCompleted();
     private:

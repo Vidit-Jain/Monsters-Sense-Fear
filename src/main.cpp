@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
 #endif
     glfwWindowHint(GLFW_RESIZABLE, false);
 
-    GLFWwindow *window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "MyGL", nullptr, nullptr);
+    GLFWwindow *window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "MONSTERS SENSE FEAR", nullptr, nullptr);
     glfwMakeContextCurrent(window);
 
     // Load glad
@@ -78,7 +78,12 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     if (Escape.State == GAME_MENU && key == GLFW_KEY_ENTER && action == GLFW_PRESS) {
         Escape.State = GAME_ACTIVE;
     }
-    
+    if (Escape.State == GAME_ACTIVE && key == GLFW_KEY_R && action == GLFW_PRESS) {
+        Escape.LightsOn = !Escape.LightsOn;
+    }
+    if (key == GLFW_KEY_P && action == GLFW_PRESS) {
+        Escape.CheatsOn = !Escape.CheatsOn;
+    }
     if (key >= 0 && key < 1024)
     {
         if (action == GLFW_PRESS)

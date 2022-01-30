@@ -20,6 +20,8 @@ public:
     unsigned int            Width, Height;
     std::vector<GameLevel>  Levels;
     unsigned int            Level;
+    int                     LightsOn;
+    int                     CheatsOn;
     Game(unsigned int width, unsigned int height);
     ~Game();
 
