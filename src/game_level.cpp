@@ -65,7 +65,6 @@ vector<vector<int>> generateGrid(unsigned int height, unsigned int width, unsign
             grid[h][w] = 4;
         }
         if (validgrid(grid, blocks)) {
-            cout << count << "\n";
             generateSprites(grid, coins, 2);
             generateSprites(grid, monsters, 3, monsterDistance);
             smallgrid = grid;
