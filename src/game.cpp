@@ -17,7 +17,7 @@ int dy[4] = {1, 0, -1, 0};
 int dx[4] = {0, -1, 0, 1};
 glm::vec2 initial_player_pos;
 Game::Game(unsigned int width, unsigned int height)
-    : State(GAME_ACTIVE), Keys(), Width(width), Height(height)
+    : State(GAME_MENU), Keys(), Width(width), Height(height)
 {
     unit_width = width / (float) gridWidth;
     unit_height = width / (float) gridHeight;
@@ -68,6 +68,16 @@ void Game::Update(float dt)
             this->Level++;
             prevpoints = points;
             Player->Position = initial_player_pos;
+        }
+        else {
+            State = GAME_WIN;
+        }
+    }
+    if (State == GAME_ACTIVE) {
+        for (auto& monster: this->Levels[this->Level].Monsters) {
+            if (this->CheckCollision(monster, *Player)) {
+                State = GAME_LOSE;
+            }
         }
     }
 }
@@ -154,10 +164,6 @@ void Game::ProcessInput(float dt)
             for (auto& box : this->Levels[this->Level].Boxes) {
                 if (box.Destroyed) continue;
                 reAdjust(1, *Player, box, velocity);
-//                if (this->CheckCollision(*Player, box)) {
-//                    Player->Position += glm::vec2(0.0f, 1.0f) * velocity;
-//                    Player->Position -= glm::vec2(0.0f, Player->Position.y - box.Size.y - box.Position.y);
-//                }
             }
         }
         if (this->Keys[GLFW_KEY_D]) {
@@ -165,10 +171,6 @@ void Game::ProcessInput(float dt)
             for (auto& box : this->Levels[this->Level].Boxes) {
                 if (box.Destroyed) continue;
                 reAdjust(2, *Player, box, velocity);
-//                if (this->CheckCollision(*Player, box)) {
-//                    Player->Position -= glm::vec2(1.0f, 0.0f) * velocity;
-//                    Player->Position += glm::vec2(box.Position.x - Player->Position.x - Player->Size.x, 0.0f);
-//                }
             }
         }
         if (this->Keys[GLFW_KEY_S]) {
@@ -176,10 +178,6 @@ void Game::ProcessInput(float dt)
             for (auto& box : this->Levels[this->Level].Boxes) {
                 if (box.Destroyed) continue;
                 reAdjust(3, *Player, box, velocity);
-//                if (this->CheckCollision(*Player, box)) {
-//                    Player->Position -= glm::vec2(0.0f, 1.0f) * velocity;
-//                    Player->Position += glm::vec2(0.0f, box.Position.y - Player->Position.y - Player->Size.y);
-//                }
             }
         }
         if (this->Keys[GLFW_KEY_A]) {
@@ -188,10 +186,6 @@ void Game::ProcessInput(float dt)
             for (auto& box : this->Levels[this->Level].Boxes) {
                 if (box.Destroyed) continue;
                 reAdjust(4, *Player, box, velocity);
-//                if (this->CheckCollision(*Player, box)) {
-//                    Player->Position += glm::vec2(1.0f, 0.0f) * velocity;
-//                    Player->Position -= glm::vec2(Player->Position.x - box.Size.x - box.Position.x, 0.0f);
-//                }
             }
         }
     }
@@ -199,30 +193,41 @@ void Game::ProcessInput(float dt)
 
 void Game::Render()
 {
-    this->DoCollision();
     Renderer->DrawSprite(ResourceManager::GetTexture("background"),
                          glm::vec2(0.0f, 0.0f), glm::vec2(this->Width, this->Height), 0.0f, glm::vec3(1.0f, 1.0f, 1.0f));
-    this->Levels[this->Level].Draw(*Renderer);
-    Player->Draw(*Renderer);
-        Text->RenderText("Press ENTER to start", 250.0f, this->Height / 2.0f, 1.0f);
-        Text->RenderText("Press W or S to select level", 245.0f, this->Height / 2.0f + 20.0f, 0.75f);
+    if (State == GAME_ACTIVE) {
+        this->DoCollision();
+        this->Levels[this->Level].Draw(*Renderer);
+        Player->Draw(*Renderer);
+        std::string str = "Points " + std::to_string(points);
+        Text->RenderText(str, 180.0f, 40.0f, 1.0f);
+    }
+    else if (State == GAME_MENU) {
+        Text->RenderText("MONSTERS SENSE FEAR", 180.0f, this->Height / 2.0f - 100.0f, 2.3f);
+        Text->RenderText("Press ENTER to start", 350.0f, this->Height / 2.0f, 1.0f);
+    }
+    else if (State == GAME_WIN) {
+        Text->RenderText("You Win!", 400.0f, this->Height / 2.0f - 50, 1.0f);
+        std::string str = "You got " + std::to_string(points) + " points";
+        Text->RenderText(str, 350.0f, this->Height / 2.0f, 1.0f);
+        Text->RenderText("Press Escape to exit", 325.0f, this->Height / 2.0f + 50, 1.0f);
+    }
+    else if (State == GAME_LOSE) {
+        Text->RenderText("GAME OVER!", 350.0f, this->Height / 2.0f - 50, 1.0f);
+        std::string str = "You completed " + std::to_string(this->Level) + " levels";
+        Text->RenderText(str, 350.0f, this->Height / 2.0f, 1.0f);
+        std::string str2 = "And earned " + std::to_string(points) + " points";
+        Text->RenderText(str2, 350.0f, this->Height / 2.0f + 50, 1.0f);
+        Text->RenderText("Press Escape to exit", 325.0f, this->Height / 2.0f + 100, 1.0f);
+    }
 }
 
 bool Game::CheckCollision(GameObject &one, GameObject &two)
 {
-    // collision x-axis?
     bool collisionX = (min(two.Position.x + two.Size.x, one.Position.x + one.Size.x)
                         -  max(two.Position.x, one.Position.x)) > 0;
-    // collision y-axis?
     bool collisionY = (min(two.Position.y + two.Size.y, one.Position.y + one.Size.y)
                        -  max(two.Position.y, one.Position.y)) > 0;
-    // collision x-axis?
-//    bool collisionX = one.Position.x + one.Size.x > two.Position.x &&
-//                      two.Position.x + two.Size.x > one.Position.x;
-//    // collision y-axis?
-//    bool collisionY = one.Position.y + one.Size.y > two.Position.y &&
-//                      two.Position.y + two.Size.y > one.Position.y;
-    // collision only if on both axes
     return collisionX && collisionY;
 }
 void Game::DoCollision() {
@@ -231,7 +236,6 @@ void Game::DoCollision() {
         if (this->CheckCollision(*Player, coin)) {
             coin.Destroyed = true;
             points++;
-            cout << points << " " << this->Levels[this->Level].Coins.size() + prevpoints << "\n";
             if (points == this->Levels[this->Level].Coins.size() + prevpoints) {
                 auto& x = this->Levels[this->Level];
                 x.Boxes[x.exitIndex].Destroyed = true;
