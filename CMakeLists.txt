@@ -9,11 +9,14 @@ set(INC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
 file(GLOB SOURCES "${SRC_DIR}/*.cpp")
 
 # Executable definition and properties
-add_executable(${PROJECT_NAME} "${SOURCES}" include/game_object.h src/game_level.cpp src/game_object.cpp)
+add_executable(${PROJECT_NAME} "${SOURCES}")
 target_include_directories(${PROJECT_NAME} PRIVATE "${INC_DIR}")
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
+#Freetype
+find_package(Freetype REQUIRED)
+target_link_libraries(${PROJECT_NAME} ${FREETYPE_LIBRARIES})
+target_include_directories(${PROJECT_NAME} PRIVATE ${FREETYPE_INCLUDE_DIRS})# GLFW
 
-# GLFW
 set(GLFW_DIR "${LIB_DIR}/glfw")
 set(GLFW_BUILD_EXAMPLES OFF CACHE INTERNAL "Build the GLFW example programs")
 set(GLFW_BUILD_TESTS OFF CACHE INTERNAL "Build the GLFW test programs")

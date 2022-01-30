@@ -4,15 +4,18 @@
 #include "resource_manager.h"
 #include <bits/stdc++.h>
 #include "game_level.h"
-SpriteRenderer  *Renderer;
+#include "text_renderer.h"
 using namespace std;
-GameObject *Player;
+SpriteRenderer    *Renderer;
+GameObject        *Player;
+TextRenderer      *Text;
 const int gridHeight = 20;
 const int gridWidth = 20;
 float unit_width, unit_height;
-int points = 0;
+int points = 0, prevpoints = 0;
 int dy[4] = {1, 0, -1, 0};
 int dx[4] = {0, -1, 0, 1};
+glm::vec2 initial_player_pos;
 Game::Game(unsigned int width, unsigned int height)
     : State(GAME_ACTIVE), Keys(), Width(width), Height(height)
 {
@@ -41,20 +44,32 @@ void Game::Init()
     ResourceManager::LoadTexture("../textures/coin.png", true, "coin");
     ResourceManager::LoadTexture("../textures/cowboy.png", true, "cowboy");
     ResourceManager::LoadTexture("../textures/background.png", false, "background");
-    GameLevel s;
-    int blocks = 25, coins = 5, monsters = 5, monsterDistance = 6;
-    auto player_pos = glm::vec2(unit_width, unit_height);
+    Text = new TextRenderer(this->Width, this->Height);
+    Text->Load("../fonts/OCRAEXT.TTF", 24);
+    int blocks[3] = {10, 16, 23};
+    int coins[3] = {3, 5, 8};
+    int monsters[3] = {2, 4, 6};
+    int monsterDistance = 6;
+    initial_player_pos = glm::vec2(unit_width, unit_height);
     auto player_size = glm::vec2(unit_width * 0.85f, unit_height * 0.85f);
-    Player = new GameObject(player_pos, player_size, ResourceManager::GetTexture("cowboy"));
-
-    s.Load(this->Height, this->Width, gridHeight, gridWidth, blocks, coins, monsters, monsterDistance);
-    this->Levels.push_back(s);
+    Player = new GameObject(initial_player_pos, player_size, ResourceManager::GetTexture("cowboy"));
+    GameLevel r[3];
+    for (int i = 0; i < 3; i++) {
+        r[i].Load(this->Height, this->Width, gridHeight, gridWidth, blocks[i], coins[i], monsters[i], monsterDistance);
+        this->Levels.push_back(r[i]);
+    }
     this->Level = 0;
 }
 
 void Game::Update(float dt)
 {
-    MonsterMove(dt * 150.0f);
+    if (Player->Position.x + Player->Size.y >= this->Width) {
+        if (this->Level != 2) {
+            this->Level++;
+            prevpoints = points;
+            Player->Position = initial_player_pos;
+        }
+    }
 }
 void Game::reAdjust(int i, GameObject& a, GameObject b, float velocity) {
     if (i == 1 && this->CheckCollision(a, b)) {
@@ -75,7 +90,6 @@ void Game::reAdjust(int i, GameObject& a, GameObject b, float velocity) {
     }
 }
 float areaIntersection(GameObject& a, float x, float y) {
-    cout << a.Position.x << " " << a.Size.x << " " << x << " " << unit_width << "\n";
     float xoverlap = max(0.0f, min(a.Position.x + a.Size.x, x + unit_width) - max(a.Position.x, x));
     float yoverlap = max(0.0f, min(a.Position.y + a.Size.y, y + unit_height) - max(a.Position.y, y));
     return xoverlap * yoverlap;
@@ -190,6 +204,8 @@ void Game::Render()
                          glm::vec2(0.0f, 0.0f), glm::vec2(this->Width, this->Height), 0.0f, glm::vec3(1.0f, 1.0f, 1.0f));
     this->Levels[this->Level].Draw(*Renderer);
     Player->Draw(*Renderer);
+        Text->RenderText("Press ENTER to start", 250.0f, this->Height / 2.0f, 1.0f);
+        Text->RenderText("Press W or S to select level", 245.0f, this->Height / 2.0f + 20.0f, 0.75f);
 }
 
 bool Game::CheckCollision(GameObject &one, GameObject &two)
@@ -215,7 +231,8 @@ void Game::DoCollision() {
         if (this->CheckCollision(*Player, coin)) {
             coin.Destroyed = true;
             points++;
-            if (points == this->Levels[this->Level].Coins.size()) {
+            cout << points << " " << this->Levels[this->Level].Coins.size() + prevpoints << "\n";
+            if (points == this->Levels[this->Level].Coins.size() + prevpoints) {
                 auto& x = this->Levels[this->Level];
                 x.Boxes[x.exitIndex].Destroyed = true;
             }
