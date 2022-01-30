@@ -60,7 +60,9 @@ int main(int argc, char *argv[])
 
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        Escape.Render();
+        if(Escape.Render()) {
+            glfwSetWindowShouldClose(window, true);
+        }
 
         glfwSwapBuffers(window);
     }

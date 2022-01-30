@@ -17,19 +17,21 @@ int bonus = 0;
 int dy[4] = {1, 0, -1, 0};
 int dx[4] = {0, -1, 0, 1};
 glm::vec2 initial_player_pos;
+float exitTime = 0;
 Game::Game(unsigned int width, unsigned int height)
     : State(GAME_MENU), Keys(), Width(width), Height(height)
 {
     LightsOn = true;
     CheatsOn = false;
     unit_width = width / (float) gridWidth;
-    unit_height = width / (float) gridHeight;
+    unit_height = height / (float) gridHeight;
 }
 
 Game::~Game()
 {
 
 }
+float timePlayed = 0.0f;
 void Game::Init()
 {
 
@@ -77,11 +79,15 @@ void Game::Update(float dt)
         }
     }
     if (State == GAME_ACTIVE) {
+        timePlayed += dt;
         for (auto& monster: this->Levels[this->Level].Monsters) {
             if (this->CheckCollision(monster, *Player)) {
                 State = GAME_LOSE;
             }
         }
+    }
+    else if (State == GAME_WIN || State == GAME_LOSE) {
+        exitTime += dt;
     }
 }
 void Game::reAdjust(int i, GameObject& a, GameObject b, float velocity) {
@@ -195,7 +201,7 @@ void Game::ProcessInput(float dt)
     }
 }
 
-void Game::Render()
+int Game::Render()
 {
     glm::vec2 center = Player->Position + glm::vec2(Player->Size.x / 2, Player->Size.y / 2);
     Renderer->DrawSprite(ResourceManager::GetTexture("background"),
@@ -212,19 +218,30 @@ void Game::Render()
         Text->RenderText("Press ENTER to start", 350.0f, this->Height / 2.0f, 1.0f);
     }
     else if (State == GAME_WIN) {
-        Text->RenderText("You Win!", 400.0f, this->Height / 2.0f - 50, 1.0f);
+        if (exitTime > 5) {
+            return 1;
+        }
+        Text->RenderText("You Win!", 325.0f, this->Height / 2.0f - 150, 2.3f);
         std::string str = "You got " + std::to_string(points) + " points";
-        Text->RenderText(str, 350.0f, this->Height / 2.0f, 1.0f);
+        Text->RenderText(str, 350.0f, this->Height / 2.0f - 50, 1.0f);
+        std::string str2 = "Time played: " + std::to_string(timePlayed) + " s";
+        Text->RenderText(str2, 350.0f, this->Height / 2.0f, 1.0f);
         Text->RenderText("Press Escape to exit", 325.0f, this->Height / 2.0f + 50, 1.0f);
     }
     else if (State == GAME_LOSE) {
-        Text->RenderText("GAME OVER!", 350.0f, this->Height / 2.0f - 50, 1.0f);
+        if (exitTime > 5) {
+            return 1;
+        }
+        Text->RenderText("GAME OVER!", 325.0f, this->Height / 2.0f - 150, 2.3f);
         std::string str = "You completed " + std::to_string(this->Level) + " levels";
-        Text->RenderText(str, 350.0f, this->Height / 2.0f, 1.0f);
+        Text->RenderText(str, 350.0f, this->Height / 2.0f - 50, 1.0f);
         std::string str2 = "And earned " + std::to_string(points) + " points";
-        Text->RenderText(str2, 350.0f, this->Height / 2.0f + 50, 1.0f);
+        Text->RenderText(str2, 350.0f, this->Height / 2.0f, 1.0f);
+        std::string str3 = "Time played: " + std::to_string(timePlayed) + " s";
+        Text->RenderText(str3, 350.0f, this->Height / 2.0f + 50, 1.0f);
         Text->RenderText("Press Escape to exit", 325.0f, this->Height / 2.0f + 100, 1.0f);
     }
+    return 0;
 }
 
 bool Game::CheckCollision(GameObject &one, GameObject &two)

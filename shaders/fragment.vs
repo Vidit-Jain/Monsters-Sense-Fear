@@ -12,7 +12,8 @@ void main()
 {
     color = vec4(spriteColor, 1.0) * texture(image, TexCoords);
     if (LightsOn == 0) {
-        float distance = max(10.0f, length(FragPos - vec4(PlayerPos, 0.0f, 1.0f)));
-        color = vec4((20/distance)*vec3(color),color.w);
+        float distance = length(FragPos - vec4(PlayerPos, 0.0f, 1.0f));
+        int x = distance < 100.0f ? 1 : 0;
+        color = vec4(x * vec3(color),color.w);
     }
 }

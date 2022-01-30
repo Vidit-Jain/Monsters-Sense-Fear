@@ -28,7 +28,7 @@ public:
     void Init();
     void ProcessInput(float dt);
     void Update(float dt);
-    void Render();
+    int Render();
     bool CheckCollision(GameObject &one, GameObject &two);
     void DoCollision();
     void MonsterMove(float velocity);
